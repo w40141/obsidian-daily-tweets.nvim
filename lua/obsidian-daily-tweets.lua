@@ -1,5 +1,5 @@
 -- main module file
-local module = require("plugin_name.module")
+local module = require("obsidian-daily-tweets.module")
 
 ---@class Config
 ---@field opt string
@@ -7,9 +7,9 @@ local module = require("plugin_name.module")
 ---@field file_name_pattern string Pattern of the file name
 ---@field heading_pattern string Keyword to search for in the file
 local config = {
-	opt = "default",
+	opt = "Hello",
 	dir_path = "~/obsidian-daily-tweets",
-	fname_pattern = "%d%d%d%d%-%d%d%-%d%d%.md",
+	fname_pattern = "test.md",
 	heading_pattern = "## tweet",
 }
 
@@ -27,47 +27,15 @@ M.setup = function(args)
 end
 
 M.hello = function()
-	return module.my_first_function(M.config.opt)
+	print(module.my_first_function(M.config.opt))
 end
 
-M.insert = function(insert_string)
-	-- ファイル名のパターンと一致するかを確認
-	local file_name = vim.fn.expand("%:t")
-	if not file_name:match(M.con.file_name_pattern) then
-		print("This file is not a markdown file.")
-		return
-	end
-
-	-- 指定されたディレクトリパスがある場合、そのディレクトリ内のファイルのみを対象にする
-	local directory_path = default_opts.directory_path
-	if directory_path ~= "" and not vim.fn.isdirectory(directory_path) then
-		print("Invalid directory path.")
-		return
-	end
-
-	if directory_path ~= "" and not file_name:match(directory_path) then
-		print("This file is not in the specified directory.")
-		return
-	end
-
-	-- 挿入する文字列のフォーマットを作成 (例: "時刻: insert_string")
-	local formatted_string = os.date("%H:%M") .. " " .. insert_string
-
-	-- マークダウンファイル内で指定された見出し語を検索
-	local line_num = vim.fn.line(".")
-	while line_num > 1 do
-		local line = vim.fn.getline(line_num)
-		if line:match(M.config.heading_pattern) then
-			-- 見出し語の下に挿入
-			vim.fn.append(line_num, "- " .. formatted_string)
-			return
-		end
-		line_num = line_num - 1
-	end
-
-	-- 見出し語が見つからなかった場合、新しい見出しを作成して挿入
-	local new_heading = M.config.heading_pattern
-	vim.fn.append("$", { new_heading, "- " .. formatted_string })
+M.tweet = function(insert_string)
+	print(insert_string)
+	local fpath = M.config.dir_path .. M.config.fname_pattern
+	local luh, lih, ldh = module.extract_headings(fpath, M.config.heading_pattern)
+	local new_lines = module.insert_word(lih, insert_string)
+	module.write_markdown_file(fpath, luh, new_lines, ldh)
 end
 
 return M
