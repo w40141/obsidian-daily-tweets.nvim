@@ -8,7 +8,7 @@ local module = require("obsidian-daily-tweets.module")
 ---@field heading_pattern string Keyword to search for in the file
 local config = {
 	opt = "Hello",
-	dir_path = "~/obsidian-daily-tweets",
+	dir_path = "~/workspace/obsidian-daily-tweets",
 	fname_pattern = "test.md",
 	heading_pattern = "## tweet",
 }
@@ -30,11 +30,17 @@ M.hello = function()
 	print(module.my_first_function(M.config.opt))
 end
 
-M.tweet = function(insert_string)
-	print(insert_string)
-	local fpath = M.config.dir_path .. M.config.fname_pattern
+M.tweet = function(opts)
+	local add_word = opts.fargs
+	print(add_word)
+	local fpath = M.config.dir_path .. "/" .. M.config.fname_pattern
+	print(fpath)
 	local luh, lih, ldh = module.extract_headings(fpath, M.config.heading_pattern)
-	local new_lines = module.insert_word(lih, insert_string)
+	if luh == nil then
+		print("error")
+		return
+	end
+	local new_lines = module.insert_word(lih, add_word)
 	module.write_markdown_file(fpath, luh, new_lines, ldh)
 end
 
